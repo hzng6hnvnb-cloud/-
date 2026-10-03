@@ -3,1996 +3,402 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta name="theme-color" content="#07110d">
   <title>سَكينة</title>
-  <meta name="description" content="سَكينة — مواقيت الصلاة والقرآن والأذكار والقبلة والتسبيح">
 
-  <style>
-    /*
-      الخط مؤقتًا من النظام.
-      بعد تجهيز ملفات خط ثمانية نربطه هنا مباشرة.
-    */
-
-    :root {
-      --bg: #070908;
-      --bg-soft: #0d110f;
-      --card: rgba(255,255,255,0.055);
-      --card-strong: rgba(255,255,255,0.085);
-      --border: rgba(255,255,255,0.09);
-      --text: #f5f3ed;
-      --muted: #9c9e99;
-      --gold: #c9a45c;
-      --gold-light: #e1c783;
-      --green: #16352a;
-      --danger: #b65c5c;
-      --shadow: 0 20px 70px rgba(0,0,0,.35);
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at 50% -10%, rgba(201,164,92,.13), transparent 35%),
-        radial-gradient(circle at 0% 50%, rgba(22,53,42,.22), transparent 35%),
-        var(--bg);
-      color: var(--text);
-      font-family:
-        "Thmanyah",
-        "Tahoma",
-        "Arial",
-        sans-serif;
-      overflow-x: hidden;
-    }
-
-    button,
-    input,
-    select {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* شاشة التحميل */
-
-    #loadingScreen {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: #070908;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity .5s ease, visibility .5s ease;
-    }
-
-    #loadingScreen.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
-
-    .loader {
-      text-align: center;
-    }
-
-    .loader-logo {
-      font-size: 42px;
-      color: var(--gold-light);
-      letter-spacing: -2px;
-      margin-bottom: 14px;
-    }
-
-    .loader-line {
-      width: 90px;
-      height: 2px;
-      margin: auto;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        var(--gold),
-        transparent
-      );
-      animation: loading 1.4s infinite ease-in-out;
-    }
-
-    @keyframes loading {
-      0%,
-      100% {
-        transform: scaleX(.2);
-        opacity: .35;
-      }
-
-      50% {
-        transform: scaleX(1);
-        opacity: 1;
-      }
-    }
-
-    /* التطبيق */
-
-    .app {
-      width: min(1180px, 100%);
-      margin: auto;
-      padding: 22px 18px 110px;
-    }
-
-    /* الهيدر */
-
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-      margin-bottom: 28px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-    }
-
-    .brand-mark {
-      width: 42px;
-      height: 42px;
-      border-radius: 15px;
-      display: grid;
-      place-items: center;
-      background:
-        linear-gradient(
-          145deg,
-          rgba(201,164,92,.22),
-          rgba(255,255,255,.04)
-        );
-      border: 1px solid rgba(201,164,92,.2);
-      color: var(--gold-light);
-      font-size: 19px;
-    }
-
-    .brand-name {
-      font-size: 24px;
-      font-weight: 600;
-    }
-
-    .brand-subtitle {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: -2px;
-    }
-
-    .location-button {
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      border-radius: 16px;
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      backdrop-filter: blur(20px);
-      transition: .2s;
-    }
-
-    .location-button:hover {
-      background: var(--card-strong);
-      border-color: rgba(201,164,92,.25);
-    }
-
-    .location-icon {
-      color: var(--gold-light);
-    }
-
-    /* الصفحات */
-
-    .page {
-      display: none;
-      animation: pageIn .35s ease;
-    }
-
-    .page.active {
-      display: block;
-    }
-
-    @keyframes pageIn {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    /* الترحيب */
-
-    .hero {
-      position: relative;
-      overflow: hidden;
-      min-height: 270px;
-      border-radius: 30px;
-      padding: 34px;
-      margin-bottom: 18px;
-      background:
-        linear-gradient(
-          135deg,
-          rgba(22,53,42,.88),
-          rgba(8,13,10,.95)
-        );
-      border: 1px solid rgba(255,255,255,.07);
-      box-shadow: var(--shadow);
-    }
-
-    .hero::before {
-      content: "";
-      position: absolute;
-      width: 300px;
-      height: 300px;
-      left: -120px;
-      top: -140px;
-      border-radius: 50%;
-      background: rgba(201,164,92,.08);
-      filter: blur(15px);
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-small {
-      color: var(--gold-light);
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-
-    .hero-title {
-      font-size: clamp(32px, 6vw, 62px);
-      line-height: 1;
-      letter-spacing: -2px;
-      margin-bottom: 16px;
-    }
-
-    .hero-description {
-      color: #c4c8c2;
-      line-height: 1.8;
-      max-width: 570px;
-      font-size: 15px;
-    }
-
-    .date-card {
-      position: absolute;
-      left: 30px;
-      bottom: 30px;
-      padding: 14px 18px;
-      border-radius: 18px;
-      background: rgba(0,0,0,.18);
-      border: 1px solid rgba(255,255,255,.07);
-      text-align: left;
-    }
-
-    .date-gregorian {
-      color: var(--muted);
-      font-size: 12px;
-      direction: rtl;
-      text-align: center;
-    }
-
-    .date-hijri {
-      color: var(--gold-light);
-      font-size: 15px;
-      margin-top: 4px;
-    }
-
-    /* الصلاة القادمة */
-
-    .next-prayer {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      align-items: center;
-      gap: 20px;
-      padding: 25px;
-      border-radius: 26px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      backdrop-filter: blur(20px);
-      margin-bottom: 18px;
-    }
-
-    .next-label {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 7px;
-    }
-
-    .next-name {
-      font-size: 31px;
-      color: var(--gold-light);
-    }
-
-    .next-time {
-      color: #d6d9d4;
-      margin-top: 5px;
-      font-size: 14px;
-    }
-
-    .countdown {
-      min-width: 145px;
-      text-align: center;
-      padding: 17px 20px;
-      border-radius: 20px;
-      background: rgba(201,164,92,.08);
-      border: 1px solid rgba(201,164,92,.15);
-    }
-
-    .countdown-value {
-      color: var(--gold-light);
-      font-size: 28px;
-      direction: ltr;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .countdown-label {
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 4px;
-    }
-
-    /* مواقيت الصلاة */
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 28px 3px 12px;
-    }
-
-    .section-title h2 {
-      font-size: 20px;
-      font-weight: 500;
-    }
-
-    .section-title span {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .prayer-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 10px;
-    }
-
-    .prayer-card {
-      position: relative;
-      min-height: 120px;
-      border-radius: 22px;
-      padding: 17px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      overflow: hidden;
-    }
-
-    .prayer-card.next {
-      background:
-        linear-gradient(
-          145deg,
-          rgba(201,164,92,.15),
-          rgba(255,255,255,.045)
-        );
-      border-color: rgba(201,164,92,.28);
-    }
-
-    .prayer-card.next::after {
-      content: "";
-      position: absolute;
-      width: 80px;
-      height: 80px;
-      left: -25px;
-      bottom: -30px;
-      border-radius: 50%;
-      background: rgba(201,164,92,.08);
-      filter: blur(8px);
-    }
-
-    .prayer-name {
-      color: #b7bab5;
-      font-size: 13px;
-      margin-bottom: 15px;
-    }
-
-    .prayer-card.next .prayer-name {
-      color: var(--gold-light);
-    }
-
-    .prayer-time {
-      font-size: 24px;
-      direction: ltr;
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-
-    /* الاختصارات */
-
-    .quick-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-    }
-
-    .quick-card {
-      min-height: 110px;
-      padding: 19px;
-      border-radius: 23px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--text);
-      text-align: right;
-      transition:
-        transform .2s,
-        background .2s,
-        border-color .2s;
-    }
-
-    .quick-card:hover {
-      transform: translateY(-3px);
-      background: var(--card-strong);
-      border-color: rgba(201,164,92,.18);
-    }
-
-    .quick-icon {
-      width: 39px;
-      height: 39px;
-      display: grid;
-      place-items: center;
-      border-radius: 13px;
-      background: rgba(201,164,92,.09);
-      color: var(--gold-light);
-      margin-bottom: 13px;
-      font-size: 18px;
-    }
-
-    .quick-title {
-      font-size: 15px;
-    }
-
-    .quick-desc {
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 3px;
-    }
-
-    /* صفحات داخلية */
-
-    .inner-header {
-      margin-bottom: 20px;
-    }
-
-    .inner-title {
-      font-size: 36px;
-      margin-bottom: 6px;
-    }
-
-    .inner-subtitle {
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .back-button {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 18px;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      padding: 10px 15px;
-      border-radius: 15px;
-    }
-
-    /* القرآن */
-
-    .surah-search {
-      width: 100%;
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      outline: none;
-      border-radius: 18px;
-      padding: 15px 17px;
-      margin-bottom: 15px;
-    }
-
-    .surah-search::placeholder {
-      color: #777b76;
-    }
-
-    .surah-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-    }
-
-    .surah-card {
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      border-radius: 20px;
-      padding: 17px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      text-align: right;
-    }
-
-    .surah-number {
-      width: 36px;
-      height: 36px;
-      display: grid;
-      place-items: center;
-      border-radius: 12px;
-      color: var(--gold-light);
-      background: rgba(201,164,92,.08);
-      font-size: 13px;
-    }
-
-    .surah-info {
-      flex: 1;
-      margin-right: 12px;
-    }
-
-    .surah-name {
-      font-size: 16px;
-    }
-
-    .surah-meta {
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 3px;
-    }
-
-    /* الأذكار */
-
-    .dhikr-list {
-      display: grid;
-      gap: 11px;
-    }
-
-    .dhikr-card {
-      padding: 22px;
-      border-radius: 23px;
-      background: var(--card);
-      border: 1px solid var(--border);
-    }
-
-    .dhikr-text {
-      line-height: 2;
-      font-size: 18px;
-    }
-
-    .dhikr-count {
-      color: var(--gold-light);
-      margin-top: 13px;
-      font-size: 12px;
-    }
-
-    /* التسبيح */
-
-    .tasbeeh-box {
-      min-height: 470px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 25px;
-      border-radius: 30px;
-      background:
-        radial-gradient(
-          circle at center,
-          rgba(201,164,92,.11),
-          transparent 55%
-        ),
-        var(--card);
-      border: 1px solid var(--border);
-    }
-
-    .tasbeeh-label {
-      color: var(--muted);
-      margin-bottom: 18px;
-    }
-
-    .tasbeeh-count {
-      font-size: 90px;
-      color: var(--gold-light);
-      font-variant-numeric: tabular-nums;
-      line-height: 1;
-      margin-bottom: 30px;
-    }
-
-    .tasbeeh-button {
-      width: 190px;
-      height: 190px;
-      border-radius: 50%;
-      border: 1px solid rgba(201,164,92,.35);
-      background:
-        radial-gradient(
-          circle at 35% 30%,
-          rgba(255,255,255,.13),
-          rgba(201,164,92,.05) 45%,
-          rgba(0,0,0,.15)
-        );
-      color: var(--gold-light);
-      font-size: 20px;
-      box-shadow:
-        0 0 0 12px rgba(201,164,92,.025),
-        0 20px 60px rgba(0,0,0,.35);
-      transition: transform .1s;
-    }
-
-    .tasbeeh-button:active {
-      transform: scale(.95);
-    }
-
-    .reset-button {
-      margin-top: 25px;
-      background: transparent;
-      color: var(--muted);
-      border: 0;
-      font-size: 12px;
-    }
-
-    /* القبلة */
-
-    .qibla-box {
-      min-height: 500px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      border-radius: 30px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      padding: 25px;
-    }
-
-    .compass {
-      width: 280px;
-      height: 280px;
-      border-radius: 50%;
-      border: 1px solid rgba(201,164,92,.25);
-      position: relative;
-      display: grid;
-      place-items: center;
-      background:
-        radial-gradient(
-          circle,
-          rgba(201,164,92,.08),
-          rgba(255,255,255,.015) 60%,
-          transparent
-        );
-      box-shadow: 0 30px 80px rgba(0,0,0,.3);
-    }
-
-    .compass::before {
-      content: "";
-      position: absolute;
-      inset: 16px;
-      border-radius: 50%;
-      border: 1px solid rgba(255,255,255,.06);
-    }
-
-    .compass-arrow {
-      position: absolute;
-      width: 4px;
-      height: 105px;
-      background: linear-gradient(
-        to top,
-        transparent 0 20%,
-        var(--gold-light) 20%
-      );
-      border-radius: 5px;
-      transform-origin: center bottom;
-      bottom: 50%;
-      transition: transform .6s ease;
-    }
-
-    .compass-center {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--gold-light);
-      box-shadow: 0 0 30px rgba(201,164,92,.4);
-      z-index: 2;
-    }
-
-    .qibla-degree {
-      margin-top: 25px;
-      color: var(--gold-light);
-      font-size: 28px;
-    }
-
-    .qibla-note {
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 5px;
-    }
-
-    /* الإعدادات */
-
-    .settings-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .setting-row {
-      padding: 18px;
-      border-radius: 21px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 15px;
-    }
-
-    .setting-title {
-      font-size: 15px;
-    }
-
-    .setting-desc {
-      color: var(--muted);
-      font-size: 11px;
-      margin-top: 3px;
-    }
-
-    .city-select {
-      border: 1px solid var(--border);
-      background: #111512;
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 13px;
-      outline: none;
-    }
-
-    /* شريط التنقل */
-
-    .bottom-nav {
-      position: fixed;
-      z-index: 100;
-      bottom: 15px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(570px, calc(100% - 24px));
-      padding: 8px;
-      border-radius: 23px;
-      background: rgba(13,16,14,.82);
-      border: 1px solid rgba(255,255,255,.09);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      box-shadow: 0 20px 60px rgba(0,0,0,.45);
-    }
-
-    .nav-item {
-      border: 0;
-      background: transparent;
-      color: #858984;
-      padding: 9px 5px;
-      border-radius: 17px;
-      font-size: 11px;
-      transition: .2s;
-    }
-
-    .nav-item.active {
-      color: var(--gold-light);
-      background: rgba(201,164,92,.09);
-    }
-
-    .nav-icon {
-      display: block;
-      font-size: 18px;
-      margin-bottom: 3px;
-    }
-
-    /* النوافذ */
-
-    .modal {
-      position: fixed;
-      inset: 0;
-      z-index: 500;
-      display: none;
-      align-items: flex-end;
-      justify-content: center;
-      background: rgba(0,0,0,.65);
-      backdrop-filter: blur(8px);
-    }
-
-    .modal.show {
-      display: flex;
-      animation: modalFade .25s ease;
-    }
-
-    @keyframes modalFade {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .modal-content {
-      width: min(600px, 100%);
-      background: #101411;
-      border: 1px solid var(--border);
-      border-bottom: 0;
-      border-radius: 30px 30px 0 0;
-      padding: 25px;
-      animation: modalUp .3s ease;
-    }
-
-    @keyframes modalUp {
-      from {
-        transform: translateY(50px);
-      }
-
-      to {
-        transform: translateY(0);
-      }
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 20px;
-    }
-
-    .modal-title {
-      font-size: 22px;
-    }
-
-    .close-button {
-      width: 36px;
-      height: 36px;
-      border: 0;
-      border-radius: 12px;
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-    }
-
-    .city-list {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 9px;
-    }
-
-    .city-option {
-      border: 1px solid var(--border);
-      background: var(--card);
-      color: var(--text);
-      border-radius: 17px;
-      padding: 14px;
-      text-align: right;
-    }
-
-    .city-option.selected {
-      border-color: rgba(201,164,92,.45);
-      background: rgba(201,164,92,.08);
-      color: var(--gold-light);
-    }
-
-    /* رسالة */
-
-    .toast {
-      position: fixed;
-      z-index: 1000;
-      top: 18px;
-      left: 50%;
-      transform: translate(-50%, -20px);
-      opacity: 0;
-      pointer-events: none;
-      padding: 12px 18px;
-      border-radius: 15px;
-      background: #151a17;
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-size: 12px;
-      transition: .25s;
-    }
-
-    .toast.show {
-      opacity: 1;
-      transform: translate(-50%, 0);
-    }
-
-    /* استجابة الجوال */
-
-    @media (max-width: 800px) {
-      .app {
-        padding: 15px 13px 105px;
-      }
-
-      .topbar {
-        margin-bottom: 20px;
-      }
-
-      .hero {
-        min-height: 330px;
-        padding: 27px;
-      }
-
-      .date-card {
-        left: auto;
-        right: 27px;
-        bottom: 25px;
-        text-align: right;
-      }
-
-      .date-gregorian {
-        text-align: right;
-      }
-
-      .prayer-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .prayer-card:last-child {
-        grid-column: span 2;
-      }
-
-      .quick-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
-      .surah-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 500px) {
-      .brand-name {
-        font-size: 21px;
-      }
-
-      .location-button {
-        padding: 9px 11px;
-      }
-
-      .location-button span:not(.location-icon) {
-        max-width: 80px;
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-      }
-
-      .next-prayer {
-        grid-template-columns: 1fr;
-      }
-
-      .countdown {
-        width: 100%;
-      }
-
-      .hero-title {
-        font-size: 43px;
-      }
-
-      .compass {
-        width: 245px;
-        height: 245px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-  <!-- شاشة البداية -->
-
-  <div id="loadingScreen">
-    <div class="loader">
-      <div class="loader-logo">سَكينة</div>
-      <div class="loader-line"></div>
-    </div>
+  <div id="loading" class="loading-screen">
+    <div class="loading-logo">سَكينة</div>
+    <div class="loading-spinner"></div>
+    <p>جاري تجهيز سَكينة...</p>
   </div>
 
-  <main class="app">
-
-    <!-- الهيدر -->
-
-    <header class="topbar">
-
-      <button
-        class="location-button"
-        id="locationButton"
-        type="button"
-      >
-        <span class="location-icon">⌖</span>
-        <span id="currentCity">جاري تحديد المدينة</span>
-      </button>
-
-      <div class="brand">
-        <div class="brand">
-          <div class="brand-mark">۞</div>
-
-          <div>
-            <div class="brand-name">سَكينة</div>
-            <div class="brand-subtitle">
-              رفيقك اليومي
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </header>
+  <main id="app">
 
     <!-- الرئيسية -->
-
-    <section
-      class="page active"
-      id="page-home"
-    >
-
-      <div class="hero">
-
-        <div class="hero-content">
-
-          <div class="hero-small">
-            السلام عليكم ورحمة الله وبركاته
-          </div>
-
-          <h1 class="hero-title">
-            طمأنينة<br>
-            لكل يوم.
-          </h1>
-
-          <p class="hero-description">
-            مواقيت الصلاة، القرآن الكريم، الأذكار،
-            القبلة والتسبيح في مكان واحد.
-          </p>
-
-        </div>
-
-        <div class="date-card">
-
-          <div
-            class="date-gregorian"
-            id="gregorianDate"
-          >
-            —
-          </div>
-
-          <div
-            class="date-hijri"
-            id="hijriDate"
-          >
-            جاري تحميل التاريخ الهجري
-          </div>
-
-        </div>
-
-      </div>
-
-      <!-- الصلاة القادمة -->
-
-      <div class="next-prayer">
-
+    <section id="home" class="page active">
+      <header class="topbar">
         <div>
-          <div class="next-label">
-            الصلاة القادمة
-          </div>
-
-          <div
-            class="next-name"
-            id="nextPrayerName"
-          >
-            —
-          </div>
-
-          <div
-            class="next-time"
-            id="nextPrayerTime"
-          >
-            —
-          </div>
+          <span class="eyebrow">السَّكينة والطمأنينة</span>
+          <h1>السلام عليكم</h1>
+          <p id="gregorianDate">—</p>
+          <p id="hijriDate">—</p>
         </div>
 
-        <div class="countdown">
+        <button class="icon-button" data-page="settings" aria-label="الإعدادات">
+          ⚙
+        </button>
+      </header>
 
-          <div
-            class="countdown-value"
-            id="countdown"
-          >
-            --:--
-          </div>
-
-          <div class="countdown-label">
-            متبقي
-          </div>
-
+      <div class="location-card">
+        <div>
+          <span>موقعك المختار</span>
+          <strong id="currentCity">جدة</strong>
         </div>
 
+        <button class="small-button" id="changeCityBtn">
+          تغيير المدينة
+        </button>
       </div>
 
-      <!-- مواقيت الصلاة -->
+      <div class="next-prayer-card">
+        <div>
+          <span>الصلاة القادمة</span>
+          <strong id="nextPrayerName">—</strong>
+        </div>
+
+        <div class="next-time">
+          <strong id="nextPrayerTime">—</strong>
+          <span id="countdown">—</span>
+        </div>
+      </div>
 
       <div class="section-title">
-        <h2>مواقيت اليوم</h2>
-        <span id="prayerDateLabel">—</span>
+        <h2>مواقيت الصلاة</h2>
+        <span>اليوم</span>
       </div>
 
-      <div
-        class="prayer-grid"
-        id="prayerGrid"
-      >
-
-        <div class="prayer-card">
-          <div class="prayer-name">الفجر</div>
-          <div class="prayer-time">—</div>
-        </div>
-
-        <div class="prayer-card">
-          <div class="prayer-name">الظهر</div>
-          <div class="prayer-time">—</div>
-        </div>
-
-        <div class="prayer-card">
-          <div class="prayer-name">العصر</div>
-          <div class="prayer-time">—</div>
-        </div>
-
-        <div class="prayer-card">
-          <div class="prayer-name">المغرب</div>
-          <div class="prayer-time">—</div>
-        </div>
-
-        <div class="prayer-card">
-          <div class="prayer-name">العشاء</div>
-          <div class="prayer-time">—</div>
-        </div>
-
-      </div>
-
-      <!-- الاختصارات -->
+      <div id="prayerGrid" class="prayer-grid"></div>
 
       <div class="section-title">
         <h2>الوصول السريع</h2>
       </div>
 
       <div class="quick-grid">
-
-        <button
-          class="quick-card"
-          data-page="quran"
-          type="button"
-        >
-          <div class="quick-icon">۞</div>
-          <div class="quick-title">القرآن الكريم</div>
-          <div class="quick-desc">
-            قراءة واستماع
-          </div>
+        <button class="quick-card" data-page="quran">
+          <span class="quick-icon">﷽</span>
+          <strong>القرآن</strong>
+          <small>قراءة المصحف</small>
         </button>
 
-        <button
-          class="quick-card"
-          data-page="adhkar"
-          type="button"
-        >
-          <div class="quick-icon">◌</div>
-          <div class="quick-title">الأذكار</div>
-          <div class="quick-desc">
-            أذكار يومية
-          </div>
+        <button class="quick-card" data-page="adhkar">
+          <span class="quick-icon">✦</span>
+          <strong>الأذكار</strong>
+          <small>أذكار المسلم</small>
         </button>
 
-        <button
-          class="quick-card"
-          data-page="qibla"
-          type="button"
-        >
-          <div class="quick-icon">⌁</div>
-          <div class="quick-title">القبلة</div>
-          <div class="quick-desc">
-            اتجاه القبلة
-          </div>
+        <button class="quick-card" data-page="tasbeeh">
+          <span class="quick-icon">◉</span>
+          <strong>التسبيح</strong>
+          <small>عداد التسبيح</small>
         </button>
 
-        <button
-          class="quick-card"
-          data-page="tasbeeh"
-          type="button"
-        >
-          <div class="quick-icon">◉</div>
-          <div class="quick-title">التسبيح</div>
-          <div class="quick-desc">
-            عداد التسبيح
-          </div>
+        <button class="quick-card" data-page="qibla">
+          <span class="quick-icon">⌖</span>
+          <strong>القبلة</strong>
+          <small>اتجاه القبلة</small>
         </button>
-
       </div>
-
     </section>
+
 
     <!-- القرآن -->
+    <section id="quran" class="page">
 
-    <section
-      class="page"
-      id="page-quran"
-    >
+      <header class="page-header">
+        <button class="back-button" data-page="home">‹</button>
 
-      <button
-        class="back-button"
-        data-page="home"
-        type="button"
-      >
-        ← الرئيسية
-      </button>
+        <div>
+          <span class="eyebrow">كتاب الله</span>
+          <h1>القرآن الكريم</h1>
+        </div>
+      </header>
 
-      <div class="inner-header">
-
-        <h1 class="inner-title">
-          القرآن الكريم
-        </h1>
-
-        <p class="inner-subtitle">
-          اختر السورة للقراءة والاستماع
-        </p>
-
-      </div>
-
-      <input
-        id="surahSearch"
-        class="surah-search"
-        type="search"
-        placeholder="ابحث عن سورة..."
-        autocomplete="off"
-      >
-
-      <div
-        class="surah-grid"
-        id="surahGrid"
-      >
-
-        <div class="surah-card">
-          <div class="surah-number">—</div>
-          <div class="surah-info">
-            <div class="surah-name">
-              جاري تحميل السور...
-            </div>
-          </div>
+      <div class="quran-intro">
+        <div>
+          <span>المصحف الشريف</span>
+          <h2>اقرأ بطمأنينة</h2>
         </div>
 
+        <div class="bismillah">﷽</div>
       </div>
 
-    </section>
-
-    <!-- الأذكار -->
-
-    <section
-      class="page"
-      id="page-adhkar"
-    >
-
-      <button
-        class="back-button"
-        data-page="home"
-        type="button"
-      >
-        ← الرئيسية
-      </button>
-
-      <div class="inner-header">
-
-        <h1 class="inner-title">
-          الأذكار
-        </h1>
-
-        <p class="inner-subtitle">
-          أذكار مختارة لليوم
-        </p>
-
-      </div>
-
-      <div class="dhikr-list">
-
-        <article class="dhikr-card">
-
-          <div class="dhikr-text">
-            سُبْحَانَ اللهِ وَبِحَمْدِهِ
-          </div>
-
-          <div class="dhikr-count">
-            ١٠٠ مرة
-          </div>
-
-        </article>
-
-        <article class="dhikr-card">
-
-          <div class="dhikr-text">
-            أَسْتَغْفِرُ اللهَ وَأَتُوبُ إِلَيْهِ
-          </div>
-
-          <div class="dhikr-count">
-            ١٠٠ مرة
-          </div>
-
-        </article>
-
-        <article class="dhikr-card">
-
-          <div class="dhikr-text">
-            سُبْحَانَ اللهِ، وَالْحَمْدُ لِلَّهِ،
-            وَاللهُ أَكْبَرُ
-          </div>
-
-          <div class="dhikr-count">
-            كرر ما تيسر
-          </div>
-
-        </article>
-
-        <article class="dhikr-card">
-
-          <div class="dhikr-text">
-            اللَّهُمَّ صَلِّ وَسَلِّمْ وَبَارِكْ
-            عَلَى نَبِيِّنَا مُحَمَّدٍ
-          </div>
-
-          <div class="dhikr-count">
-            كرر ما تيسر
-          </div>
-
-        </article>
-
-      </div>
-
-    </section>
-
-    <!-- التسبيح -->
-
-    <section
-      class="page"
-      id="page-tasbeeh"
-    >
-
-      <button
-        class="back-button"
-        data-page="home"
-        type="button"
-      >
-        ← الرئيسية
-      </button>
-
-      <div class="inner-header">
-
-        <h1 class="inner-title">
-          التسبيح
-        </h1>
-
-        <p class="inner-subtitle">
-          عداد بسيط للتسبيح والاستغفار
-        </p>
-
-      </div>
-
-      <div class="tasbeeh-box">
-
-        <div class="tasbeeh-label">
-          عدد التسبيحات
-        </div>
-
-        <div
-          class="tasbeeh-count"
-          id="tasbeehCount"
+      <div class="search-box">
+        <input
+          id="surahSearch"
+          type="search"
+          placeholder="ابحث عن سورة..."
+          autocomplete="off"
         >
-          0
-        </div>
-
-        <button
-          class="tasbeeh-button"
-          id="tasbeehButton"
-          type="button"
-        >
-          سبّح
-        </button>
-
-        <button
-          class="reset-button"
-          id="tasbeehReset"
-          type="button"
-        >
-          تصفير العداد
-        </button>
-
       </div>
 
-    </section>
+      <div id="surahGrid" class="surah-grid"></div>
 
-    <!-- القبلة -->
+      <!-- قارئ المصحف -->
+      <div id="mushafReader" class="mushaf-reader hidden">
 
-    <section
-      class="page"
-      id="page-qibla"
-    >
-
-      <button
-        class="back-button"
-        data-page="home"
-        type="button"
-      >
-        ← الرئيسية
-      </button>
-
-      <div class="inner-header">
-
-        <h1 class="inner-title">
-          القبلة
-        </h1>
-
-        <p class="inner-subtitle">
-          اتجاه القبلة من مدينتك
-        </p>
-
-      </div>
-
-      <div class="qibla-box">
-
-        <div class="compass">
-
-          <div
-            class="compass-arrow"
-            id="qiblaArrow"
-          ></div>
-
-          <div class="compass-center"></div>
-
-        </div>
-
-        <div
-          class="qibla-degree"
-          id="qiblaDegree"
-        >
-          —
-        </div>
-
-        <div class="qibla-note">
-          درجة اتجاه القبلة من الشمال
-        </div>
-
-      </div>
-
-    </section>
-
-    <!-- الإعدادات -->
-
-    <section
-      class="page"
-      id="page-settings"
-    >
-
-      <button
-        class="back-button"
-        data-page="home"
-        type="button"
-      >
-        ← الرئيسية
-      </button>
-
-      <div class="inner-header">
-
-        <h1 class="inner-title">
-          الإعدادات
-        </h1>
-
-        <p class="inner-subtitle">
-          تحكم في إعدادات سَكينة
-        </p>
-
-      </div>
-
-      <div class="settings-list">
-
-        <div class="setting-row">
+        <div class="reader-header">
+          <button id="closeMushaf" class="back-button">‹</button>
 
           <div>
-            <div class="setting-title">
-              المدينة
-            </div>
-
-            <div class="setting-desc">
-              المدينة المستخدمة لحساب مواقيت الصلاة
-            </div>
+            <span>المصحف الشريف</span>
+            <h2 id="readerSurahName">—</h2>
           </div>
+        </div>
 
-          <button
-            class="city-select"
-            id="settingsCityButton"
-            type="button"
-          >
-            اختيار
+        <div class="mushaf-page">
+          <img id="mushafImage" src="" alt="صفحة من المصحف">
+        </div>
+
+        <div class="mushaf-controls">
+          <button id="prevAyah" class="control-button">
+            السابق
           </button>
 
+          <span id="mushafPosition">—</span>
+
+          <button id="nextAyah" class="control-button">
+            التالي
+          </button>
         </div>
 
-        <div class="setting-row">
+        <div class="audio-box">
+          <span>استماع</span>
 
-          <div>
-            <div class="setting-title">
-              طريقة الحساب
-            </div>
+          <select id="reciterSelect">
+            <option value="ar.alafasy">مشاري العفاسي</option>
+            <option value="ar.husary">محمود خليل الحصري</option>
+            <option value="ar.minshawi">محمد صديق المنشاوي</option>
+            <option value="ar.abdulbasitmurattal">
+              عبد الباسط عبد الصمد
+            </option>
+          </select>
 
-            <div class="setting-desc">
-              أم القرى
-            </div>
-          </div>
-
-          <span style="color:#c9a45c;">
-            السعودية
-          </span>
-
+          <audio id="quranAudio" controls preload="none"></audio>
         </div>
 
       </div>
+    </section>
 
+
+    <!-- الأذكار -->
+    <section id="adhkar" class="page">
+
+      <header class="page-header">
+        <button class="back-button" data-page="home">‹</button>
+
+        <div>
+          <span class="eyebrow">ذكر الله</span>
+          <h1>الأذكار</h1>
+        </div>
+      </header>
+
+      <div class="adhkar-tabs">
+        <button class="adhkar-tab active" data-adhkar="morning">
+          أذكار الصباح
+        </button>
+
+        <button class="adhkar-tab" data-adhkar="evening">
+          أذكار المساء
+        </button>
+
+        <button class="adhkar-tab" data-adhkar="after">
+          بعد الصلاة
+        </button>
+
+        <button class="adhkar-tab" data-adhkar="random">
+          ذكر عشوائي
+        </button>
+      </div>
+
+      <div id="adhkarContent" class="adhkar-list"></div>
+    </section>
+
+
+    <!-- التسبيح -->
+    <section id="tasbeeh" class="page">
+
+      <header class="page-header">
+        <button class="back-button" data-page="home">‹</button>
+
+        <div>
+          <span class="eyebrow">ذكر الله</span>
+          <h1>التسبيح</h1>
+        </div>
+      </header>
+
+      <div class="tasbeeh-card">
+        <span>عدد التسبيحات</span>
+
+        <strong id="tasbeehCount">0</strong>
+
+        <button id="tasbeehButton" class="tasbeeh-button">
+          اضغط للتسبيح
+        </button>
+
+        <button id="resetTasbeeh" class="reset-button">
+          تصفير العداد
+        </button>
+      </div>
+    </section>
+
+
+    <!-- القبلة -->
+    <section id="qibla" class="page">
+
+      <header class="page-header">
+        <button class="back-button" data-page="home">‹</button>
+
+        <div>
+          <span class="eyebrow">اتجاه مكة</span>
+          <h1>القبلة</h1>
+        </div>
+      </header>
+
+      <div class="qibla-card">
+        <div id="qiblaCompass" class="qibla-compass">
+          <div class="compass-ring">
+            <span class="north">ش</span>
+            <div class="kaaba-marker">⌖</div>
+          </div>
+        </div>
+
+        <strong id="qiblaDegree">—°</strong>
+        <p>اتجاه القبلة من المدينة المختارة</p>
+      </div>
+    </section>
+
+
+    <!-- الإعدادات -->
+    <section id="settings" class="page">
+
+      <header class="page-header">
+        <button class="back-button" data-page="home">‹</button>
+
+        <div>
+          <span class="eyebrow">تخصيص</span>
+          <h1>الإعدادات</h1>
+        </div>
+      </header>
+
+      <div class="settings-card">
+        <span>المدينة</span>
+        <button id="settingsCityButton" class="settings-row">
+          <strong id="settingsCity">جدة</strong>
+          <span>›</span>
+        </button>
+      </div>
+
+      <div class="settings-card">
+        <span>الواجهة</span>
+
+        <div class="font-preview">
+          <strong>سَكينة</strong>
+          <small>ثمانية الرقمي — رفيع</small>
+        </div>
+      </div>
+
+      <div class="settings-card quran-font-card">
+        <span>خط القرآن</span>
+
+        <div class="font-preview quran-font-preview">
+          <strong>القرآن الكريم</strong>
+          <small>ديواني</small>
+        </div>
+      </div>
     </section>
 
   </main>
 
-  <!-- شريط التنقل -->
 
+  <!-- التنقل السفلي -->
   <nav class="bottom-nav">
 
-    <button
-      class="nav-item active"
-      data-page="home"
-      type="button"
-    >
-      <span class="nav-icon">⌂</span>
-      الرئيسية
+    <button class="nav-item active" data-page="home">
+      <span>⌂</span>
+      <small>الرئيسية</small>
     </button>
 
-    <button
-      class="nav-item"
-      data-page="quran"
-      type="button"
-    >
-      <span class="nav-icon">۞</span>
-      القرآن
+    <button class="nav-item" data-page="quran">
+      <span>﷽</span>
+      <small>القرآن</small>
     </button>
 
-    <button
-      class="nav-item"
-      data-page="adhkar"
-      type="button"
-    >
-      <span class="nav-icon">◌</span>
-      الأذكار
+    <button class="nav-item" data-page="adhkar">
+      <span>✦</span>
+      <small>الأذكار</small>
     </button>
 
-    <button
-      class="nav-item"
-      data-page="settings"
-      type="button"
-    >
-      <span class="nav-icon">⚙</span>
-      الإعدادات
+    <button class="nav-item" data-page="qibla">
+      <span>⌖</span>
+      <small>القبلة</small>
+    </button>
+
+    <button class="nav-item" data-page="settings">
+      <span>⚙</span>
+      <small>الإعدادات</small>
     </button>
 
   </nav>
 
-  <!-- نافذة اختيار المدينة -->
 
-  <div
-    class="modal"
-    id="cityModal"
-  >
+  <!-- اختيار المدينة -->
+  <div id="cityModal" class="modal hidden">
 
-    <div class="modal-content">
+    <div class="modal-box">
 
-      <div class="modal-header">
+      <button id="closeCityModal" class="modal-close">
+        ×
+      </button>
 
-        <div class="modal-title">
-          اختر مدينتك
-        </div>
+      <span class="eyebrow">الموقع</span>
+      <h2>اختر مدينتك</h2>
 
-        <button
-          class="close-button"
-          id="closeCityModal"
-          type="button"
-        >
-          ×
-        </button>
-
-      </div>
-
-      <div
-        class="city-list"
-        id="cityList"
-      ></div>
+      <div id="cityList" class="city-list"></div>
 
     </div>
 
   </div>
 
-  <!-- إشعار -->
 
-  <div
-    class="toast"
-    id="toast"
-  >
-    تم التحديث
+  <!-- تنبيه الصلاة -->
+  <div id="prayerAlert" class="prayer-alert hidden">
+    <div class="prayer-alert-box">
+      <span class="alert-symbol">☾</span>
+      <h2 id="alertPrayerName">حان وقت الصلاة</h2>
+      <p>حان الآن وقت الصلاة</p>
+      <button id="closePrayerAlert">حسنًا</button>
+    </div>
   </div>
 
-  <script>
 
-    /*
-      هذا الملف الآن مسؤول عن الهيكل فقط.
-      في الخطوة التالية سنربطه بالبيانات الحقيقية:
-      - مواقيت الصلاة
-      - التاريخ الهجري
-      - القرآن
-      - التلاوات
-      - القبلة
-      - المدينة
-    */
+  <!-- سؤال الصلاة -->
+  <div id="afterPrayerModal" class="modal hidden">
 
-    window.Sakina = {
-      version: "2.0",
-      selectedCity: localStorage.getItem("sakinaCity") || "جدة"
-    };
+    <div class="modal-box prayer-question">
 
-    const pages = document.querySelectorAll(".page");
-    const navigationItems = document.querySelectorAll(
-      "[data-page]"
-    );
+      <span class="eyebrow">تذكير لطيف</span>
 
-    function showPage(pageName) {
+      <h2>صليت أم لا؟</h2>
 
-      pages.forEach(page => {
-        page.classList.remove("active");
-      });
+      <p>
+        نسأل الله أن يعيننا وإياك على ذكره وشكره وحسن عبادته.
+      </p>
 
-      const target = document.getElementById(
-        "page-" + pageName
-      );
+      <div class="question-buttons">
 
-      if (target) {
-        target.classList.add("active");
-      }
+        <button id="prayedYes" class="primary-button">
+          نعم، صليت
+        </button>
 
-      document
-        .querySelectorAll(".nav-item")
-        .forEach(item => {
-          item.classList.toggle(
-            "active",
-            item.dataset.page === pageName
-          );
-        });
+        <button id="prayedNo" class="secondary-button">
+          ليس بعد
+        </button>
 
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-      });
-    }
+      </div>
 
-    navigationItems.forEach(item => {
+    </div>
 
-      item.addEventListener("click", () => {
+  </div>
 
-        const pageName = item.dataset.page;
 
-        if (pageName) {
-          showPage(pageName);
-        }
+  <div id="toast" class="toast"></div>
 
-      });
-
-    });
-
-    /*
-      المدن الأساسية
-    */
-
-    const cities = [
-      "جدة",
-      "مكة المكرمة",
-      "المدينة المنورة",
-      "الرياض",
-      "الدمام",
-      "الخبر",
-      "الطائف",
-      "أبها",
-      "تبوك",
-      "حائل",
-      "جازان",
-      "نجران",
-      "بريدة",
-      "الجبيل",
-      "ينبع"
-    ];
-
-    const cityList = document.getElementById(
-      "cityList"
-    );
-
-    cities.forEach(city => {
-
-      const button = document.createElement("button");
-
-      button.type = "button";
-      button.className = "city-option";
-
-      button.textContent = city;
-
-      button.addEventListener("click", () => {
-
-        localStorage.setItem(
-          "sakinaCity",
-          city
-        );
-
-        window.Sakina.selectedCity = city;
-
-        document.getElementById(
-          "currentCity"
-        ).textContent = city;
-
-        document.getElementById(
-          "settingsCityButton"
-        ).textContent = city;
-
-        document
-          .querySelectorAll(".city-option")
-          .forEach(option => {
-            option.classList.remove("selected");
-          });
-
-        button.classList.add("selected");
-
-        document
-          .getElementById("cityModal")
-          .classList.remove("show");
-
-        showToast(
-          "تم اختيار " + city
-        );
-
-      });
-
-      cityList.appendChild(button);
-
-    });
-
-    /*
-      فتح اختيار المدينة
-    */
-
-    function openCityModal() {
-
-      const modal =
-        document.getElementById("cityModal");
-
-      modal.classList.add("show");
-
-      document
-        .querySelectorAll(".city-option")
-        .forEach(option => {
-
-          option.classList.toggle(
-            "selected",
-            option.textContent ===
-            window.Sakina.selectedCity
-          );
-
-        });
-
-    }
-
-    document
-      .getElementById("locationButton")
-      .addEventListener(
-        "click",
-        openCityModal
-      );
-
-    document
-      .getElementById("settingsCityButton")
-      .addEventListener(
-        "click",
-        openCityModal
-      );
-
-    document
-      .getElementById("closeCityModal")
-      .addEventListener(
-        "click",
-        () => {
-          document
-            .getElementById("cityModal")
-            .classList.remove("show");
-        }
-      );
-
-    document
-      .getElementById("cityModal")
-      .addEventListener(
-        "click",
-        event => {
-
-          if (
-            event.target.id === "cityModal"
-          ) {
-            event.currentTarget
-              .classList.remove("show");
-          }
-
-        }
-      );
-
-    /*
-      المدينة الحالية
-    */
-
-    document.getElementById(
-      "currentCity"
-    ).textContent =
-      window.Sakina.selectedCity;
-
-    document.getElementById(
-      "settingsCityButton"
-    ).textContent =
-      window.Sakina.selectedCity;
-
-    /*
-      التاريخ الميلادي من الجهاز
-    */
-
-    function updateGregorianDate() {
-
-      const now = new Date();
-
-      const formatted =
-        new Intl.DateTimeFormat(
-          "ar-SA",
-          {
-            weekday: "long",
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-          }
-        ).format(now);
-
-      document.getElementById(
-        "gregorianDate"
-      ).textContent = formatted;
-
-    }
-
-    updateGregorianDate();
-
-    /*
-      التسبيح
-    */
-
-    let tasbeeh =
-      Number(
-        localStorage.getItem(
-          "sakinaTasbeeh"
-        ) || 0
-      );
-
-    const tasbeehCount =
-      document.getElementById(
-        "tasbeehCount"
-      );
-
-    function renderTasbeeh() {
-
-      tasbeehCount.textContent =
-        tasbeeh.toLocaleString("ar-SA");
-
-    }
-
-    document
-      .getElementById("tasbeehButton")
-      .addEventListener(
-        "click",
-        () => {
-
-          tasbeeh++;
-
-          localStorage.setItem(
-            "sakinaTasbeeh",
-            tasbeeh
-          );
-
-          renderTasbeeh();
-
-        }
-      );
-
-    document
-      .getElementById("tasbeehReset")
-      .addEventListener(
-        "click",
-        () => {
-
-          tasbeeh = 0;
-
-          localStorage.setItem(
-            "sakinaTasbeeh",
-            "0"
-          );
-
-          renderTasbeeh();
-
-        }
-      );
-
-    renderTasbeeh();
-
-    /*
-      إشعارات صغيرة
-    */
-
-    let toastTimer;
-
-    function showToast(message) {
-
-      const toast =
-        document.getElementById("toast");
-
-      toast.textContent = message;
-
-      toast.classList.add("show");
-
-      clearTimeout(toastTimer);
-
-      toastTimer = setTimeout(() => {
-
-        toast.classList.remove("show");
-
-      }, 2200);
-
-    }
-
-    /*
-      إخفاء شاشة البداية
-    */
-
-    window.addEventListener(
-      "load",
-      () => {
-
-        setTimeout(() => {
-
-          document
-            .getElementById(
-              "loadingScreen"
-            )
-            .classList.add("hidden");
-
-        }, 700);
-
-      }
-    );
-
-  </script>
+  <script src="app.js"></script>
 
 </body>
 </html>
